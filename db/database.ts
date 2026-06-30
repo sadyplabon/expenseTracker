@@ -1,10 +1,19 @@
 import * as SQLite from 'expo-sqlite';
 
-export type Category = 'FOOD' | 'TRANSPORT' | 'SHOPPING' | 'BILLS' | 'HEALTH' | 'OTHER';
+export type TransactionType = 'EXPENSE' | 'INCOME';
 
-export interface Expense {
+export type ExpenseCategory =
+  | 'FOOD' | 'TRANSPORT' | 'SHOPPING' | 'BILLS' | 'HEALTH' | 'ATM' | 'OTHER';
+
+export type IncomeCategory =
+  | 'SALARY' | 'FREELANCE' | 'BUSINESS' | 'OTHER_INCOME';
+
+export type Category = ExpenseCategory | IncomeCategory;
+
+export interface Transaction {
   id: number;
   amount: number;
+  type: TransactionType;
   category: Category;
   note: string;
   date: string; // YYYY-MM-DD
@@ -13,6 +22,12 @@ export interface Expense {
 export interface CategoryTotal {
   category: Category;
   total: number;
+}
+
+export interface MonthlySummary {
+  totalIncome: number;
+  totalExpense: number;
+  net: number;
 }
 
 let db: SQLite.SQLiteDatabase | null = null;
@@ -24,70 +39,83 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
     CREATE TABLE IF NOT EXISTS expenses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       amount REAL NOT NULL,
+      type TEXT NOT NULL DEFAULT 'EXPENSE',
       category TEXT NOT NULL,
       note TEXT NOT NULL DEFAULT '',
       date TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_date ON expenses(date);
   `);
+  // Migrate: add type column if it doesn't exist yet
+  try {
+    await db.execAsync(`ALTER TABLE expenses ADD COLUMN type TEXT NOT NULL DEFAULT 'EXPENSE'`);
+  } catch (_) {
+    // column already exists, ignore
+  }
   return db;
 }
 
-export async function addExpense(
+export async function addTransaction(
   amount: number,
+  type: TransactionType,
   category: Category,
   note: string,
   date: string
 ): Promise<void> {
   const database = await getDb();
   await database.runAsync(
-    'INSERT INTO expenses (amount, category, note, date) VALUES (?, ?, ?, ?)',
-    [amount, category, note, date]
+    'INSERT INTO expenses (amount, type, category, note, date) VALUES (?, ?, ?, ?, ?)',
+    [amount, type, category, note, date]
   );
 }
 
-export async function updateExpense(expense: Expense): Promise<void> {
+export async function updateTransaction(tx: Transaction): Promise<void> {
   const database = await getDb();
   await database.runAsync(
-    'UPDATE expenses SET amount = ?, category = ?, note = ?, date = ? WHERE id = ?',
-    [expense.amount, expense.category, expense.note, expense.date, expense.id]
+    'UPDATE expenses SET amount = ?, type = ?, category = ?, note = ?, date = ? WHERE id = ?',
+    [tx.amount, tx.type, tx.category, tx.note, tx.date, tx.id]
   );
 }
 
-export async function deleteExpense(id: number): Promise<void> {
+export async function deleteTransaction(id: number): Promise<void> {
   const database = await getDb();
   await database.runAsync('DELETE FROM expenses WHERE id = ?', [id]);
 }
 
-export async function getExpensesByDate(date: string): Promise<Expense[]> {
+export async function getTransactionsByDate(date: string): Promise<Transaction[]> {
   const database = await getDb();
-  return database.getAllAsync<Expense>(
+  return database.getAllAsync<Transaction>(
     'SELECT * FROM expenses WHERE date = ? ORDER BY id DESC',
     [date]
   );
 }
 
-export async function getExpensesByMonth(yearMonth: string): Promise<Expense[]> {
+export async function getTransactionsByMonth(yearMonth: string): Promise<Transaction[]> {
   const database = await getDb();
-  return database.getAllAsync<Expense>(
+  return database.getAllAsync<Transaction>(
     "SELECT * FROM expenses WHERE date LIKE ? ORDER BY date DESC, id DESC",
     [`${yearMonth}%`]
   );
 }
 
-export async function getTotalForMonth(yearMonth: string): Promise<number> {
+export async function getMonthlySummary(yearMonth: string): Promise<MonthlySummary> {
   const database = await getDb();
-  const result = await database.getFirstAsync<{ total: number | null }>(
-    "SELECT SUM(amount) as total FROM expenses WHERE date LIKE ?",
+  const rows = await database.getAllAsync<{ type: TransactionType; total: number }>(
+    "SELECT type, SUM(amount) as total FROM expenses WHERE date LIKE ? GROUP BY type",
     [`${yearMonth}%`]
   );
-  return result?.total ?? 0;
+  const totalIncome = rows.find(r => r.type === 'INCOME')?.total ?? 0;
+  const totalExpense = rows.find(r => r.type === 'EXPENSE')?.total ?? 0;
+  return { totalIncome, totalExpense, net: totalIncome - totalExpense };
 }
 
-export async function getCategoryTotalsForMonth(yearMonth: string): Promise<CategoryTotal[]> {
+export async function getCategoryTotalsForMonth(
+  yearMonth: string,
+  type: TransactionType
+): Promise<CategoryTotal[]> {
   const database = await getDb();
   return database.getAllAsync<CategoryTotal>(
-    "SELECT category, SUM(amount) as total FROM expenses WHERE date LIKE ? GROUP BY category ORDER BY total DESC",
-    [`${yearMonth}%`]
+    "SELECT category, SUM(amount) as total FROM expenses WHERE date LIKE ? AND type = ? GROUP BY category ORDER BY total DESC",
+    [`${yearMonth}%`, type]
   );
 }
