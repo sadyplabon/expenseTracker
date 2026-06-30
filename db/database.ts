@@ -1,14 +1,14 @@
 import * as SQLite from 'expo-sqlite';
 
-export type TransactionType = 'EXPENSE' | 'INCOME';
+export type TransactionType = 'EXPENSE' | 'INCOME' | 'ATM';
 
 export type ExpenseCategory =
-  | 'FOOD' | 'TRANSPORT' | 'SHOPPING' | 'BILLS' | 'HEALTH' | 'ATM' | 'OTHER';
+  | 'FOOD' | 'TRANSPORT' | 'SHOPPING' | 'BILLS' | 'HEALTH' | 'OTHER';
 
 export type IncomeCategory =
   | 'SALARY' | 'FREELANCE' | 'BUSINESS' | 'OTHER_INCOME';
 
-export type Category = ExpenseCategory | IncomeCategory;
+export type Category = ExpenseCategory | IncomeCategory | 'ATM';
 
 export interface Transaction {
   id: number;
@@ -106,7 +106,17 @@ export async function getMonthlySummary(yearMonth: string): Promise<MonthlySumma
   );
   const totalIncome = rows.find(r => r.type === 'INCOME')?.total ?? 0;
   const totalExpense = rows.find(r => r.type === 'EXPENSE')?.total ?? 0;
+  // ATM withdrawals are excluded from net — they are cash transfers, not expenses
   return { totalIncome, totalExpense, net: totalIncome - totalExpense };
+}
+
+export async function getAtmTotalForMonth(yearMonth: string): Promise<number> {
+  const database = await getDb();
+  const result = await database.getFirstAsync<{ total: number | null }>(
+    "SELECT SUM(amount) as total FROM expenses WHERE date LIKE ? AND type = 'ATM'",
+    [`${yearMonth}%`]
+  );
+  return result?.total ?? 0;
 }
 
 export async function getCategoryTotalsForMonth(

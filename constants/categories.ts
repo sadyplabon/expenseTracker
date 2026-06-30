@@ -1,7 +1,7 @@
 import { Category, ExpenseCategory, IncomeCategory, TransactionType } from '../db/database';
 
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  'FOOD', 'TRANSPORT', 'SHOPPING', 'BILLS', 'HEALTH', 'ATM', 'OTHER'
+  'FOOD', 'TRANSPORT', 'SHOPPING', 'BILLS', 'HEALTH', 'OTHER'
 ];
 
 export const INCOME_CATEGORIES: IncomeCategory[] = [
@@ -15,8 +15,9 @@ export const CATEGORY_META: Record<Category, { label: string; emoji: string; col
   SHOPPING:     { label: 'Shopping',         emoji: '🛍️', color: '#8E24AA' },
   BILLS:        { label: 'Bill Payment',     emoji: '📄', color: '#D32F2F' },
   HEALTH:       { label: 'Health',           emoji: '💊', color: '#00ACC1' },
-  ATM:          { label: 'ATM Withdrawal',   emoji: '🏧', color: '#546E7A' },
   OTHER:        { label: 'Other Expense',    emoji: '💸', color: '#757575' },
+  // ATM (neutral transfer)
+  ATM:          { label: 'ATM Withdrawal',   emoji: '🏧', color: '#546E7A' },
   // Income
   SALARY:       { label: 'Salary',           emoji: '💼', color: '#2E7D32' },
   FREELANCE:    { label: 'Freelance',        emoji: '💻', color: '#388E3C' },
@@ -25,8 +26,9 @@ export const CATEGORY_META: Record<Category, { label: string; emoji: string; col
 };
 
 export const TYPE_META: Record<TransactionType, { label: string; color: string; bgColor: string }> = {
-  EXPENSE: { label: 'Expense', color: '#E53935', bgColor: '#FFEBEE' },
-  INCOME:  { label: 'Income',  color: '#2E7D32', bgColor: '#E8F5E9' },
+  EXPENSE: { label: 'Expense',        color: '#E53935', bgColor: '#FFEBEE' },
+  INCOME:  { label: 'Income',         color: '#2E7D32', bgColor: '#E8F5E9' },
+  ATM:     { label: 'ATM Withdrawal', color: '#546E7A', bgColor: '#ECEFF1' },
 };
 
 export function formatDate(date: Date): string {

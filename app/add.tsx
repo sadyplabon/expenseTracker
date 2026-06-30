@@ -31,10 +31,13 @@ export default function AddScreen() {
 
   const categories = txType === 'EXPENSE' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const typeMeta = TYPE_META[txType];
+  const isAtm = txType === 'ATM';
 
   const handleTypeChange = (t: TransactionType) => {
     setTxType(t);
-    setCategory(t === 'EXPENSE' ? 'FOOD' : 'SALARY');
+    if (t === 'EXPENSE') setCategory('FOOD');
+    else if (t === 'INCOME') setCategory('SALARY');
+    else setCategory('ATM');
   };
 
   const save = async () => {
@@ -72,21 +75,32 @@ export default function AddScreen() {
 
         {/* Type Toggle */}
         <View style={styles.typeToggle}>
-          {(['EXPENSE', 'INCOME'] as TransactionType[]).map((t) => (
+          {([
+            { t: 'EXPENSE', label: '💸 Expense' },
+            { t: 'INCOME',  label: '💰 Income'  },
+            { t: 'ATM',     label: '🏧 ATM'     },
+          ] as { t: TransactionType; label: string }[]).map(({ t, label }) => (
             <TouchableOpacity
               key={t}
-              style={[
-                styles.typeBtn,
-                txType === t && { backgroundColor: TYPE_META[t].color }
-              ]}
+              style={[styles.typeBtn, txType === t && { backgroundColor: TYPE_META[t].color }]}
               onPress={() => handleTypeChange(t)}
             >
               <Text style={[styles.typeBtnText, txType === t && { color: '#fff' }]}>
-                {t === 'EXPENSE' ? '💸 Expense' : '💰 Income'}
+                {label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* ATM notice */}
+        {isAtm && (
+          <View style={styles.atmNotice}>
+            <Ionicons name="information-circle-outline" size={18} color="#546E7A" />
+            <Text style={styles.atmNoticeText}>
+              ATM withdrawals are recorded as cash transfers. They don't count as expenses — record actual spending separately.
+            </Text>
+          </View>
+        )}
 
         {/* Amount */}
         <View>
@@ -102,8 +116,8 @@ export default function AddScreen() {
           {amountError && <Text style={styles.errorText}>Enter a valid amount</Text>}
         </View>
 
-        {/* Category */}
-        <View>
+        {/* Category — hidden for ATM */}
+        {!isAtm && <View>
           <Text style={styles.label}>Category</Text>
           <View style={styles.categoryGrid}>
             {categories.map((cat) => {
@@ -126,7 +140,7 @@ export default function AddScreen() {
               );
             })}
           </View>
-        </View>
+        </View>}
 
         {/* Note */}
         <View>
@@ -185,6 +199,11 @@ const styles = StyleSheet.create({
   },
   categoryEmoji: { fontSize: 16 },
   categoryLabel: { fontSize: 13, color: '#555', fontWeight: '500' },
+  atmNotice: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+    backgroundColor: '#ECEFF1', borderRadius: 10, padding: 12,
+  },
+  atmNoticeText: { flex: 1, fontSize: 13, color: '#546E7A', lineHeight: 18 },
   saveBtn: {
     borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 32,
   },

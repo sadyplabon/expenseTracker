@@ -6,7 +6,7 @@ import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   Transaction, CategoryTotal, MonthlySummary,
-  getTransactionsByMonth, getMonthlySummary, getCategoryTotalsForMonth,
+  getTransactionsByMonth, getMonthlySummary, getCategoryTotalsForMonth, getAtmTotalForMonth,
 } from '../db/database';
 import {
   formatCurrency, formatYearMonth, formatMonthYear, CATEGORY_META, TYPE_META,
@@ -18,6 +18,7 @@ export default function MonthlyReportScreen() {
   const [summary, setSummary] = useState<MonthlySummary>({ totalIncome: 0, totalExpense: 0, net: 0 });
   const [expenseCats, setExpenseCats] = useState<CategoryTotal[]>([]);
   const [incomeCats, setIncomeCats] = useState<CategoryTotal[]>([]);
+  const [atmTotal, setAtmTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const ym = formatYearMonth(monthDate);
@@ -25,16 +26,18 @@ export default function MonthlyReportScreen() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [txs, sum, eCats, iCats] = await Promise.all([
+    const [txs, sum, eCats, iCats, atm] = await Promise.all([
       getTransactionsByMonth(ym),
       getMonthlySummary(ym),
       getCategoryTotalsForMonth(ym, 'EXPENSE'),
       getCategoryTotalsForMonth(ym, 'INCOME'),
+      getAtmTotalForMonth(ym),
     ]);
     setTransactions(txs);
     setSummary(sum);
     setExpenseCats(eCats);
     setIncomeCats(iCats);
+    setAtmTotal(atm);
     setLoading(false);
   }, [ym]);
 
@@ -84,6 +87,18 @@ export default function MonthlyReportScreen() {
               </View>
             </View>
           </View>
+
+          {/* ATM info card */}
+          {atmTotal > 0 && (
+            <View style={styles.atmCard}>
+              <Text style={styles.atmEmoji}>🏧</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.atmTitle}>Cash Withdrawn (ATM)</Text>
+                <Text style={styles.atmSub}>Not counted as expense — recorded as cash transfer</Text>
+              </View>
+              <Text style={styles.atmAmount}>{formatCurrency(atmTotal)}</Text>
+            </View>
+          )}
 
           {/* Income Breakdown */}
           {incomeCats.length > 0 && (
@@ -209,6 +224,15 @@ const styles = StyleSheet.create({
   txCat: { fontSize: 13, color: '#444', fontWeight: '500', flex: 1 },
   txNote: { fontSize: 12, color: '#888', flex: 1 },
   txAmt: { fontSize: 13, fontWeight: '600' },
+  atmCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 12, backgroundColor: '#ECEFF1',
+    borderRadius: 10, padding: 14,
+  },
+  atmEmoji: { fontSize: 24 },
+  atmTitle: { fontSize: 14, fontWeight: '700', color: '#546E7A' },
+  atmSub: { fontSize: 11, color: '#90A4AE', marginTop: 2 },
+  atmAmount: { fontSize: 16, fontWeight: 'bold', color: '#546E7A' },
   empty: { alignItems: 'center', paddingTop: 60, gap: 12 },
   emptyText: { fontSize: 16, color: '#999' },
 });

@@ -46,6 +46,7 @@ export default function DailyScreen() {
 
   const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + t.amount, 0);
+  const totalAtm = transactions.filter(t => t.type === 'ATM').reduce((s, t) => s + t.amount, 0);
   const net = totalIncome - totalExpense;
 
   return (
@@ -80,6 +81,11 @@ export default function DailyScreen() {
           </Text>
         </View>
       </View>
+      {totalAtm > 0 && (
+        <View style={styles.atmBanner}>
+          <Text style={styles.atmBannerText}>🏧 Cash withdrawn today: {formatCurrency(totalAtm)}</Text>
+        </View>
+      )}
 
       {loading ? (
         <ActivityIndicator style={{ marginTop: 40 }} color="#1976D2" />
@@ -172,6 +178,11 @@ const styles = StyleSheet.create({
   txNote: { fontSize: 12, color: '#888', marginTop: 2 },
   txAmount: { fontSize: 15, fontWeight: '700', marginRight: 6 },
   deleteBtn: { padding: 4 },
+  atmBanner: {
+    marginHorizontal: 12, marginBottom: 4, backgroundColor: '#ECEFF1',
+    borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8,
+  },
+  atmBannerText: { fontSize: 13, color: '#546E7A', fontWeight: '600' },
   fab: {
     position: 'absolute', bottom: 24, right: 24,
     backgroundColor: '#1976D2', width: 58, height: 58, borderRadius: 29,
