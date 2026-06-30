@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Get-Command eas -ErrorAction SilentlyContinue)"
+      "PowerShell(Get-Command eas -ErrorAction SilentlyContinue)",
+      "WebFetch(domain:expo.dev)"
     ]
   }
 }
