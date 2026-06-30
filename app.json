@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Expense Tracker",
+    "name": "BudgetBuddy",
     "slug": "expense-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,13 +16,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1976D2"
       },
-      "package": "com.expensetracker.app"
+      "package": "com.budgetbuddy.app"
     },
     "plugins": [
       "expo-router",
       "expo-sqlite",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-image-picker"
     ],
     "scheme": "expensetracker",
     "experiments": {

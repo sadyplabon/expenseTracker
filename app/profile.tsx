@@ -1,0 +1,211 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ScrollView, Alert, ActivityIndicator,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
+import Avatar from '../components/Avatar';
+import Logo from '../components/Logo';
+import { getProfile, saveProfile } from '../store/profile';
+import { getMonthlySummary, getTransactionsByMonth } from '../db/database';
+import { formatCurrency, formatYearMonth } from '../constants/categories';
+
+export default function ProfileScreen() {
+  const [name, setName] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ income: 0, expense: 0, net: 0, txCount: 0 });
+
+  const ym = formatYearMonth(new Date());
+
+  useEffect(() => {
+    (async () => {
+      const profile = await getProfile();
+      setName(profile.name);
+      setPhotoUri(profile.photoUri);
+      setDraftName(profile.name);
+
+      const [summary, txs] = await Promise.all([
+        getMonthlySummary(ym),
+        getTransactionsByMonth(ym),
+      ]);
+      setStats({
+        income: summary.totalIncome,
+        expense: summary.totalExpense,
+        net: summary.net,
+        txCount: txs.length,
+      });
+      setLoading(false);
+    })();
+  }, []);
+
+  const pickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Allow access to your photo library to set a profile picture.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const saveChanges = async () => {
+    const trimmed = draftName.trim();
+    if (!trimmed) { Alert.alert('Name required', 'Please enter your name.'); return; }
+    await saveProfile(trimmed, photoUri);
+    setName(trimmed);
+    setEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setDraftName(name);
+    setEditing(false);
+  };
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* Header card */}
+      <View style={styles.headerCard}>
+        <View style={styles.logoRow}>
+          <Logo size={36} />
+          <Text style={styles.appName}>BudgetBuddy</Text>
+        </View>
+
+        <TouchableOpacity onPress={editing ? pickPhoto : undefined} style={styles.avatarWrap}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Avatar name={name || 'User'} photoUri={photoUri} size={90} />
+          )}
+          {editing && (
+            <View style={styles.cameraOverlay}>
+              <Ionicons name="camera" size={20} color="#fff" />
+            </View>
+          )}
+        </TouchableOpacity>
+
+        {editing ? (
+          <TextInput
+            style={styles.nameInput}
+            value={draftName}
+            onChangeText={setDraftName}
+            placeholder="Your name"
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            autoFocus
+          />
+        ) : (
+          <Text style={styles.nameText}>{name || 'Tap edit to set your name'}</Text>
+        )}
+
+        <View style={styles.editBtnRow}>
+          {editing ? (
+            <>
+              <TouchableOpacity style={styles.saveBtn} onPress={saveChanges}>
+                <Ionicons name="checkmark" size={16} color="#fff" />
+                <Text style={styles.saveBtnText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelBtn} onPress={cancelEdit}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity style={styles.editBtn} onPress={() => { setDraftName(name); setEditing(true); }}>
+              <Ionicons name="pencil" size={14} color="#1976D2" />
+              <Text style={styles.editBtnText}>Edit Profile</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* This month stats */}
+      <Text style={styles.sectionTitle}>This Month's Summary</Text>
+      <View style={styles.statsGrid}>
+        <StatCard label="Income" value={formatCurrency(stats.income)} color="#2E7D32" bg="#E8F5E9" />
+        <StatCard label="Expense" value={formatCurrency(stats.expense)} color="#E53935" bg="#FFEBEE" />
+        <StatCard label="Net Balance" value={formatCurrency(stats.net)} color={stats.net >= 0 ? '#1565C0' : '#E65100'} bg={stats.net >= 0 ? '#E3F2FD' : '#FFF3E0'} />
+        <StatCard label="Transactions" value={String(stats.txCount)} color="#555" bg="#F5F5F5" />
+      </View>
+
+      {/* App info */}
+      <View style={styles.aboutCard}>
+        <View style={styles.aboutRow}>
+          <Logo size={48} />
+          <View style={{ marginLeft: 14 }}>
+            <Text style={styles.aboutName}>BudgetBuddy</Text>
+            <Text style={styles.aboutTagline}>Smart & simple expense tracking</Text>
+            <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
+
+function StatCard({ label, value, color, bg }: { label: string; value: string; color: string; bg: string }) {
+  return (
+    <View style={[styles.statCard, { backgroundColor: bg }]}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F5F5F5' },
+  headerCard: {
+    backgroundColor: '#1976D2', paddingTop: 24, paddingBottom: 28,
+    alignItems: 'center', gap: 12,
+  },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  appName: { fontSize: 22, fontWeight: 'bold', color: '#fff', letterSpacing: 0.5 },
+  avatarWrap: { position: 'relative' },
+  cameraOverlay: {
+    position: 'absolute', bottom: 0, right: 0,
+    backgroundColor: '#0D47A1', borderRadius: 14, padding: 6,
+    borderWidth: 2, borderColor: '#1976D2',
+  },
+  nameText: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  nameInput: {
+    fontSize: 20, fontWeight: 'bold', color: '#fff',
+    borderBottomWidth: 2, borderBottomColor: 'rgba(255,255,255,0.6)',
+    paddingVertical: 4, paddingHorizontal: 12, minWidth: 180, textAlign: 'center',
+  },
+  editBtnRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  editBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+  },
+  editBtnText: { fontSize: 13, fontWeight: '600', color: '#1976D2' },
+  saveBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#2E7D32', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+  },
+  saveBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
+  cancelBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+  },
+  cancelBtnText: { fontSize: 13, color: '#fff' },
+  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#333', margin: 16, marginBottom: 8 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginHorizontal: 16 },
+  statCard: { flex: 1, minWidth: '44%', borderRadius: 12, padding: 14 },
+  statLabel: { fontSize: 12, color: '#666', marginBottom: 4 },
+  statValue: { fontSize: 16, fontWeight: 'bold' },
+  aboutCard: {
+    margin: 16, backgroundColor: '#fff', borderRadius: 14, padding: 20,
+    elevation: 1,
+  },
+  aboutRow: { flexDirection: 'row', alignItems: 'center' },
+  aboutName: { fontSize: 18, fontWeight: 'bold', color: '#1976D2' },
+  aboutTagline: { fontSize: 13, color: '#666', marginTop: 2 },
+  aboutVersion: { fontSize: 11, color: '#AAA', marginTop: 4 },
+});
