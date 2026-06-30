@@ -25,6 +25,15 @@
     "scheme": "expensetracker",
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "8b90e28a-7dbf-4f37-aaaa-c74bbc522519"
+      }
+    },
+    "owner": "sadyplabon"
   }
 }
