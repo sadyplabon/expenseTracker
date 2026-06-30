@@ -5,10 +5,10 @@ import {
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Expense, deleteExpense, getExpensesByDate } from '@/db/database';
+import { Expense, deleteExpense, getExpensesByDate } from '../db/database';
 import {
   formatCurrency, formatDate, formatDisplayDate, CATEGORY_META,
-} from '@/constants/categories';
+} from '../constants/categories';
 
 export default function DailyScreen() {
   const router = useRouter();

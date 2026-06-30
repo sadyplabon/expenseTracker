@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Category, addExpense, updateExpense } from '@/db/database';
-import { ALL_CATEGORIES, CATEGORY_META, formatDate } from '@/constants/categories';
+import { Category, addExpense, updateExpense } from '../db/database';
+import { ALL_CATEGORIES, CATEGORY_META, formatDate } from '../constants/categories';
 
 export default function AddExpenseScreen() {
   const router = useRouter();

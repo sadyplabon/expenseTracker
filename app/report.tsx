@@ -7,10 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   Expense, CategoryTotal,
   getExpensesByMonth, getTotalForMonth, getCategoryTotalsForMonth,
-} from '@/db/database';
+} from '../db/database';
 import {
   formatCurrency, formatYearMonth, formatMonthYear, CATEGORY_META,
-} from '@/constants/categories';
+} from '../constants/categories';
 
 export default function MonthlyReportScreen() {
   const [monthDate, setMonthDate] = useState(new Date());
