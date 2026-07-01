@@ -22,6 +22,13 @@ export async function addCustomCategory(cat: Omit<CustomCategory, 'id'>): Promis
   return newCat;
 }
 
+export async function editCustomCategory(id: string, label: string, emoji: string): Promise<void> {
+  const all = await getCustomCategories();
+  await AsyncStorage.setItem(KEY, JSON.stringify(
+    all.map(c => c.id === id ? { ...c, label, emoji } : c)
+  ));
+}
+
 export async function deleteCustomCategory(id: string): Promise<void> {
   const all = await getCustomCategories();
   await AsyncStorage.setItem(KEY, JSON.stringify(all.filter(c => c.id !== id)));

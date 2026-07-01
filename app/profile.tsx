@@ -11,8 +11,10 @@ import { getProfile, saveProfile } from '../store/profile';
 import { getMonthlySummary, getTransactionsByMonth } from '../db/database';
 import { formatCurrency, formatYearMonth } from '../constants/categories';
 import { exportAllData, importData } from '../utils/dataTransfer';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -182,6 +184,19 @@ export default function ProfileScreen() {
             <Text style={styles.dataBtnSub}>Load transactions from CSV file</Text>
           </View>
           {transferring ? <ActivityIndicator size="small" /> : <Ionicons name="chevron-forward" size={18} color="#CCC" />}
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        <TouchableOpacity style={styles.dataBtn} onPress={() => router.push('/categories')}>
+          <View style={[styles.dataIconBox, { backgroundColor: '#F3E5F5' }]}>
+            <Ionicons name="albums-outline" size={22} color="#7B1FA2" />
+          </View>
+          <View style={styles.dataBtnText}>
+            <Text style={styles.dataBtnTitle}>Manage Categories</Text>
+            <Text style={styles.dataBtnSub}>Add, edit, or delete custom categories</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#CCC" />
         </TouchableOpacity>
       </View>
 

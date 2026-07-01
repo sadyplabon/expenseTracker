@@ -23,15 +23,21 @@ export default function AddScreen() {
   const isEdit = !!params.id;
   const initialDate = params.date ?? formatDate(new Date());
 
-  const initType = (params.type as TransactionType) ?? 'EXPENSE';
-  const initCategory = (params.category as string) ?? 'FOOD';
-
-  const [txType, setTxType] = useState<TransactionType>(initType);
+  const [txType, setTxType] = useState<TransactionType>((params.type as TransactionType) ?? 'EXPENSE');
   const [amount, setAmount] = useState(params.amount ? String(params.amount) : '');
-  const [category, setCategory] = useState<string>(initCategory);
+  const [category, setCategory] = useState<string>((params.category as string) ?? 'FOOD');
   const [note, setNote] = useState(params.note ? String(params.note) : '');
   const [amountError, setAmountError] = useState(false);
   const [customCats, setCustomCats] = useState<CustomCategory[]>([]);
+
+  // Re-sync all fields when editing a different entry (component may be reused)
+  useEffect(() => {
+    setTxType((params.type as TransactionType) ?? 'EXPENSE');
+    setAmount(params.amount ? String(params.amount) : '');
+    setCategory((params.category as string) ?? 'FOOD');
+    setNote(params.note ? String(params.note) : '');
+    setAmountError(false);
+  }, [params.id]);
 
   // Add category modal state
   const [showAddModal, setShowAddModal] = useState(false);

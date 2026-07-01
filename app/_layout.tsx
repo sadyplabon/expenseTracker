@@ -59,6 +59,10 @@ export default function RootLayout() {
         name="add"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="categories"
+        options={{ href: null }}
+      />
     </Tabs>
   );
 }
