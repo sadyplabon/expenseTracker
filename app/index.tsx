@@ -111,9 +111,12 @@ export default function DailyScreen() {
                   router.push({
                     pathname: '/add',
                     params: {
-                      id: item.id, amount: item.amount,
-                      type: item.type, category: item.category,
-                      note: item.note, date: item.date,
+                      id: String(item.id),
+                      amount: String(item.amount),
+                      type: item.type,
+                      category: item.category,
+                      note: item.note,
+                      date: item.date,
                     },
                   })
                 }

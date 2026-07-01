@@ -23,12 +23,14 @@ export default function AddScreen() {
   const isEdit = !!params.id;
   const initialDate = params.date ?? formatDate(new Date());
 
-  const [txType, setTxType] = useState<TransactionType>((params.type as TransactionType) ?? 'EXPENSE');
-  const [amount, setAmount] = useState(params.amount ?? '');
-  const [category, setCategory] = useState<string>((params.category as Category) ?? 'FOOD');
-  const [note, setNote] = useState(params.note ?? '');
+  const initType = (params.type as TransactionType) ?? 'EXPENSE';
+  const initCategory = (params.category as string) ?? 'FOOD';
+
+  const [txType, setTxType] = useState<TransactionType>(initType);
+  const [amount, setAmount] = useState(params.amount ? String(params.amount) : '');
+  const [category, setCategory] = useState<string>(initCategory);
+  const [note, setNote] = useState(params.note ? String(params.note) : '');
   const [amountError, setAmountError] = useState(false);
-  const [showAll, setShowAll] = useState(false);
   const [customCats, setCustomCats] = useState<CustomCategory[]>([]);
 
   // Add category modal state
@@ -42,6 +44,9 @@ export default function AddScreen() {
   const defaultCats = txType === 'EXPENSE' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const userCats = customCats.filter(c => c.forType === txType).map(c => c.id);
   const allCats = [...defaultCats, ...userCats];
+  const categoryIndex = allCats.indexOf(category);
+  // Auto-expand if the selected category is beyond the visible range
+  const [showAll, setShowAll] = useState(isEdit && categoryIndex >= DEFAULT_CATEGORIES_SHOWN);
   const visibleCats = showAll ? allCats : allCats.slice(0, DEFAULT_CATEGORIES_SHOWN);
   const hasMore = allCats.length > DEFAULT_CATEGORIES_SHOWN;
 
