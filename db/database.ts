@@ -3,12 +3,15 @@ import * as SQLite from 'expo-sqlite';
 export type TransactionType = 'EXPENSE' | 'INCOME' | 'ATM';
 
 export type ExpenseCategory =
-  | 'FOOD' | 'TRANSPORT' | 'SHOPPING' | 'BILLS' | 'HEALTH' | 'OTHER';
+  | 'FOOD' | 'GROCERY' | 'VEGETABLES' | 'FISH' | 'MEAT'
+  | 'TRANSPORT' | 'SHOPPING' | 'ELECTRONICS' | 'FURNITURE' | 'TOILETRIES'
+  | 'BILLS' | 'HEALTH' | 'OTHER';
 
 export type IncomeCategory =
   | 'SALARY' | 'FREELANCE' | 'BUSINESS' | 'OTHER_INCOME';
 
-export type Category = ExpenseCategory | IncomeCategory | 'ATM';
+// Category is a string to support custom user-defined categories too
+export type Category = ExpenseCategory | IncomeCategory | 'ATM' | string;
 
 export interface Transaction {
   id: number;

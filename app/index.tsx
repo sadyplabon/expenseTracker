@@ -7,7 +7,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Transaction, deleteTransaction, getTransactionsByDate } from '../db/database';
 import {
-  formatCurrency, formatDate, formatDisplayDate, CATEGORY_META, TYPE_META,
+  formatCurrency, formatDate, formatDisplayDate, getCategoryMeta, TYPE_META,
 } from '../constants/categories';
 
 export default function DailyScreen() {
@@ -102,7 +102,7 @@ export default function DailyScreen() {
           refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => {
-            const meta = CATEGORY_META[item.category];
+            const meta = getCategoryMeta(item.category);
             const typeMeta = TYPE_META[item.type];
             return (
               <TouchableOpacity

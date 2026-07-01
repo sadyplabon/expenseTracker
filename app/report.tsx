@@ -9,7 +9,7 @@ import {
   getTransactionsByMonth, getMonthlySummary, getCategoryTotalsForMonth, getAtmTotalForMonth,
 } from '../db/database';
 import {
-  formatCurrency, formatYearMonth, formatMonthYear, CATEGORY_META, TYPE_META,
+  formatCurrency, formatYearMonth, formatMonthYear, getCategoryMeta, TYPE_META,
 } from '../constants/categories';
 
 export default function MonthlyReportScreen() {
@@ -140,7 +140,7 @@ export default function MonthlyReportScreen() {
                       </View>
                     </View>
                     {dayTxs.map((t) => {
-                      const meta = CATEGORY_META[t.category];
+                      const meta = getCategoryMeta(t.category);
                       const typeMeta = TYPE_META[t.type];
                       return (
                         <View key={t.id} style={styles.txRow}>
@@ -172,7 +172,7 @@ export default function MonthlyReportScreen() {
 }
 
 function CategoryBar({ ct, total }: { ct: CategoryTotal; total: number }) {
-  const meta = CATEGORY_META[ct.category];
+  const meta = getCategoryMeta(ct.category);
   const pct = total > 0 ? (ct.total / total) * 100 : 0;
   return (
     <View style={styles.catRow}>

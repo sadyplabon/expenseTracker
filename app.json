@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#1976D2"
     },
     "android": {
@@ -23,7 +23,8 @@
       "expo-sqlite",
       "expo-asset",
       "expo-font",
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-document-picker"
     ],
     "scheme": "expensetracker",
     "experiments": {
