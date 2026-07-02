@@ -9,11 +9,13 @@ import { Transaction, deleteTransaction, getTransactionsByDate } from '../db/dat
 import {
   formatCurrency, formatDate, formatDisplayDate, getCategoryMeta, TYPE_META,
 } from '../constants/categories';
+import { CustomCategory, getCustomCategories } from '../store/customCategories';
 
 export default function DailyScreen() {
   const router = useRouter();
   const [date, setDate] = useState(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [customCats, setCustomCats] = useState<CustomCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   const dateStr = formatDate(date);
@@ -21,8 +23,12 @@ export default function DailyScreen() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const rows = await getTransactionsByDate(dateStr);
+    const [rows, cats] = await Promise.all([
+      getTransactionsByDate(dateStr),
+      getCustomCategories(),
+    ]);
     setTransactions(rows);
+    setCustomCats(cats);
     setLoading(false);
   }, [dateStr]);
 
@@ -102,7 +108,7 @@ export default function DailyScreen() {
           refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => {
-            const meta = getCategoryMeta(item.category);
+            const meta = getCategoryMeta(item.category, customCats);
             const typeMeta = TYPE_META[item.type];
             return (
               <TouchableOpacity

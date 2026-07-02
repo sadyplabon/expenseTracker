@@ -2,8 +2,8 @@ import { Category, ExpenseCategory, IncomeCategory, TransactionType } from '../d
 import { CustomCategory } from '../store/customCategories';
 
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  'FOOD', 'GROCERY', 'VEGETABLES', 'FISH', 'MEAT',
-  'TRANSPORT', 'SHOPPING', 'ELECTRONICS', 'FURNITURE', 'TOILETRIES',
+  'FOOD', 'RESTAURANT', 'GROCERY', 'VEGETABLES', 'FRUITS', 'FISH', 'MEAT',
+  'TRANSPORT', 'TOUR', 'SHOPPING', 'ELECTRONICS', 'FURNITURE', 'TOILETRIES',
   'BILLS', 'HEALTH', 'OTHER',
 ];
 
@@ -16,11 +16,14 @@ export const DEFAULT_CATEGORIES_SHOWN = 6;
 export const CATEGORY_META: Record<string, { label: string; emoji: string; color: string }> = {
   // Expenses
   FOOD:        { label: 'Food & Drinks',   emoji: '🍔', color: '#E53935' },
+  RESTAURANT:  { label: 'Restaurant',      emoji: '🍽️', color: '#E64A19' },
   GROCERY:     { label: 'Grocery',         emoji: '🛒', color: '#F4511E' },
   VEGETABLES:  { label: 'Vegetables',      emoji: '🥦', color: '#43A047' },
+  FRUITS:      { label: 'Fruits',          emoji: '🍎', color: '#D81B60' },
   FISH:        { label: 'Fish',            emoji: '🐟', color: '#0288D1' },
   MEAT:        { label: 'Meat',            emoji: '🥩', color: '#B71C1C' },
   TRANSPORT:   { label: 'Transport',       emoji: '🚌', color: '#FB8C00' },
+  TOUR:        { label: 'Tour & Travel',   emoji: '✈️', color: '#0288D1' },
   SHOPPING:    { label: 'Shopping',        emoji: '🛍️', color: '#8E24AA' },
   ELECTRONICS: { label: 'Electronics',     emoji: '📱', color: '#3949AB' },
   FURNITURE:   { label: 'Furniture',       emoji: '🛋️', color: '#6D4C41' },
@@ -51,7 +54,10 @@ export function getCategoryMeta(catId: string, customCategories: CustomCategory[
 }
 
 export function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 export function formatYearMonth(date: Date): string {

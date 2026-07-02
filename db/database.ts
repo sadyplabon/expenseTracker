@@ -3,8 +3,8 @@ import * as SQLite from 'expo-sqlite';
 export type TransactionType = 'EXPENSE' | 'INCOME' | 'ATM';
 
 export type ExpenseCategory =
-  | 'FOOD' | 'GROCERY' | 'VEGETABLES' | 'FISH' | 'MEAT'
-  | 'TRANSPORT' | 'SHOPPING' | 'ELECTRONICS' | 'FURNITURE' | 'TOILETRIES'
+  | 'FOOD' | 'RESTAURANT' | 'GROCERY' | 'VEGETABLES' | 'FRUITS' | 'FISH' | 'MEAT'
+  | 'TRANSPORT' | 'TOUR' | 'SHOPPING' | 'ELECTRONICS' | 'FURNITURE' | 'TOILETRIES'
   | 'BILLS' | 'HEALTH' | 'OTHER';
 
 export type IncomeCategory =
